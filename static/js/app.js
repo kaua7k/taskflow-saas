@@ -1,338 +1,173 @@
-const STORAGE_KEY = 'taskflow_tasks';
+const STORE_KEY = 'taskflow_v2';
 
-const tasks = loadTasks();
+let tasks = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+let editingId = null;
+let activeFilter = 'all';
 
-let currentFilter = 'all';
-let currentSearch = '';
-let sortByPriority = false;
-let currentTheme = 'light';
-let nextId = tasks.length ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+// ── SAVE ──
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(tasks));
+}
 
-const taskList = document.getElementById('taskList');
-const statusFilter = document.getElementById('statusFilter');
-const searchInput = document.getElementById('searchInput');
-const taskModal = document.getElementById('taskModal');
-const taskTitle = document.getElementById('taskTitle');
-const taskStatus = document.getElementById('taskStatus');
-const taskPriority = document.getElementById('taskPriority');
-const titleError = document.getElementById('titleError');
-const openModalBtn = document.getElementById('openModal');
-const closeModalBtn = document.getElementById('closeModal');
-const quickAddBtn = document.getElementById('quickAddBtn');
-const saveTaskBtn = document.getElementById('saveTask');
-const themeToggle = document.getElementById('themeToggle');
-const clearDoneBtn = document.getElementById('clearDoneBtn');
-const sortPriorityBtn = document.getElementById('sortPriorityBtn');
-const resetFiltersBtn = document.getElementById('resetFiltersBtn');
-const emptyState = document.getElementById('emptyState');
-const activityList = document.getElementById('activityList');
-const weeklyBar = document.getElementById('weeklyBar');
-const weeklyProgress = document.getElementById('weeklyProgress');
-const focusText = document.getElementById('focusText');
-const navItems = document.querySelectorAll('.nav-item');
+// ── RENDER ──
+function render() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const prio = document.getElementById('priority-filter').value;
 
-const priorityOrder = { high: 1, medium: 2, low: 3 };
+  let visible = tasks.filter(t => {
+    const matchSearch = t.title.toLowerCase().includes(search) || (t.desc || '').toLowerCase().includes(search);
+    const matchPrio = prio === 'all' || t.priority === prio;
+    const matchFilter =
+      activeFilter === 'all' ? true :
+      activeFilter === 'hoje' ? isToday(t.createdAt) :
+      t.status === activeFilter;
+    return matchSearch && matchPrio && matchFilter;
+  });
 
-function loadTasks() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [
-      { id: 1, title: 'Revisar proposta comercial', status: 'doing', priority: 'high', completed: false },
-      { id: 2, title: 'Responder tickets do suporte', status: 'todo', priority: 'medium', completed: false },
-      { id: 3, title: 'Atualizar documentação interna', status: 'done', priority: 'low', completed: true },
-      { id: 4, title: 'Planejar deploy da nova versão', status: 'doing', priority: 'high', completed: false }
-    ];
+  const list = document.getElementById('task-list');
+  const empty = document.getElementById('empty-state');
+
+  list.innerHTML = '';
+
+  if (visible.length === 0) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    visible.forEach(t => {
+      const el = document.createElement('div');
+      el.className = 'task-item' + (t.status === 'concluida' ? ' done' : '');
+      el.innerHTML = `
+        <div class="task-check" data-id="${t.id}" title="Marcar como concluída">${t.status === 'concluida' ? '✓' : ''}</div>
+        <div class="task-title">${escHtml(t.title)}</div>
+        <div class="task-meta">
+          <span class="badge badge-${t.priority}">${t.priority}</span>
+          <span class="badge badge-${t.status}">${labelStatus(t.status)}</span>
+        </div>
+        <div class="task-actions">
+          <button class="task-btn" data-edit="${t.id}" title="Editar">✎</button>
+          <button class="task-btn del" data-del="${t.id}" title="Excluir">✕</button>
+        </div>
+      `;
+      list.appendChild(el);
+    });
   }
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return [];
-  }
+
+  updateStats();
+  updateCounts();
 }
 
-function saveTasks() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+function labelStatus(s) {
+  return { pendente: 'Pendente', andamento: 'Andamento', concluida: 'Concluída' }[s] || s;
 }
 
-function getStatusLabel(status) {
-  return { todo: 'A fazer', doing: 'Em andamento', done: 'Concluída' }[status] || status;
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function getPriorityLabel(priority) {
-  return { high: 'Alta', medium: 'Média', low: 'Baixa' }[priority] || priority;
+function isToday(ts) {
+  const d = new Date(ts), n = new Date();
+  return d.getDate() === n.getDate() && d.getMonth() === n.getMonth() && d.getFullYear() === n.getFullYear();
 }
 
-function addActivity(text) {
-  const li = document.createElement('li');
-  li.textContent = text;
-  activityList.prepend(li);
-  while (activityList.children.length > 5) {
-    activityList.removeChild(activityList.lastChild);
-  }
+// ── STATS ──
+function updateStats() {
+  document.getElementById('stat-total').textContent = tasks.length;
+  document.getElementById('stat-andamento').textContent = tasks.filter(t => t.status === 'andamento').length;
+  document.getElementById('stat-concluidas').textContent = tasks.filter(t => t.status === 'concluida').length;
+  document.getElementById('stat-alta').textContent = tasks.filter(t => t.priority === 'alta').length;
+
+  const pct = tasks.length ? Math.round(tasks.filter(t => t.status === 'concluida').length / tasks.length * 100) : 0;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
 }
 
-function openModal() {
-  clearValidation();
-  taskModal.classList.remove('hidden');
-  taskTitle.focus();
+function updateCounts() {
+  document.getElementById('count-all').textContent = tasks.length;
+  document.getElementById('count-hoje').textContent = tasks.filter(t => isToday(t.createdAt)).length;
+  document.getElementById('count-andamento').textContent = tasks.filter(t => t.status === 'andamento').length;
+  document.getElementById('count-concluida').textContent = tasks.filter(t => t.status === 'concluida').length;
+}
+
+// ── MODAL ──
+function openModal(id = null) {
+  editingId = id;
+  const t = id ? tasks.find(x => x.id === id) : null;
+  document.getElementById('modal-title').textContent = id ? 'Editar tarefa' : 'Nova tarefa';
+  document.getElementById('task-title').value = t ? t.title : '';
+  document.getElementById('task-desc').value = t ? (t.desc || '') : '';
+  document.getElementById('task-priority').value = t ? t.priority : 'media';
+  document.getElementById('task-status').value = t ? t.status : 'pendente';
+  document.getElementById('modal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('task-title').focus(), 50);
 }
 
 function closeModal() {
-  taskModal.classList.add('hidden');
+  document.getElementById('modal').classList.add('hidden');
+  editingId = null;
 }
 
-function clearValidation() {
-  titleError.classList.add('hidden');
-  taskTitle.classList.remove('invalid');
-}
+function saveModal() {
+  const title = document.getElementById('task-title').value.trim();
+  if (!title) { document.getElementById('task-title').focus(); return; }
 
-function setActiveNav(section) {
-  navItems.forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.section === section);
-  });
-
-  if (section === 'dashboard') {
-    currentFilter = 'all';
-    currentSearch = '';
-  } else if (section === 'tasks') {
-    currentFilter = 'all';
-  } else if (section === 'today') {
-    currentFilter = 'doing';
-  } else if (section === 'completed') {
-    currentFilter = 'done';
-  }
-
-  statusFilter.value = currentFilter === 'all' ? 'all' : currentFilter;
-  searchInput.value = currentSearch;
-  renderTasks();
-}
-
-function getFilteredTasks() {
-  let filtered = tasks.filter(task => {
-    const matchStatus = currentFilter === 'all' ? true : task.status === currentFilter;
-    const q = currentSearch.toLowerCase();
-    const matchSearch =
-      task.title.toLowerCase().includes(q) ||
-      getPriorityLabel(task.priority).toLowerCase().includes(q) ||
-      getStatusLabel(task.status).toLowerCase().includes(q);
-    return matchStatus && matchSearch;
-  });
-
-  if (sortByPriority) {
-    filtered = [...filtered].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
-  }
-
-  return filtered;
-}
-
-function updateSummary() {
-  const total = tasks.length;
-  const doing = tasks.filter(t => t.status === 'doing').length;
-  const done = tasks.filter(t => t.status === 'done').length;
-  const high = tasks.filter(t => t.priority === 'high').length;
-
-  document.getElementById('totalTasks').textContent = total;
-  document.getElementById('doingTasks').textContent = doing;
-  document.getElementById('doneTasks').textContent = done;
-  document.getElementById('highPriorityTasks').textContent = high;
-
-  const progress = total ? Math.round((done / total) * 100) : 0;
-  weeklyProgress.textContent = `${progress}%`;
-  weeklyBar.style.width = `${progress}%`;
-
-  if (doing > 0) {
-    focusText.textContent = 'Você tem itens em andamento. Finalize o que já começou antes de abrir novas tarefas.';
-  } else if (high > 0) {
-    focusText.textContent = 'Existem prioridades altas aguardando atenção. Vale organizar a próxima entrega agora.';
+  if (editingId) {
+    const t = tasks.find(x => x.id === editingId);
+    t.title = title;
+    t.desc = document.getElementById('task-desc').value.trim();
+    t.priority = document.getElementById('task-priority').value;
+    t.status = document.getElementById('task-status').value;
   } else {
-    focusText.textContent = 'Fluxo limpo. Este é um bom momento para planejar a próxima semana.';
-  }
-}
-
-function renderTasks() {
-  const filtered = getFilteredTasks();
-  taskList.innerHTML = '';
-  emptyState.classList.toggle('hidden', filtered.length !== 0);
-
-  filtered.forEach(task => {
-    const card = document.createElement('article');
-    card.className = 'task-card';
-    card.innerHTML = `
-      <input class="task-check" type="checkbox" ${task.completed ? 'checked' : ''} data-action="toggle" data-id="${task.id}">
-      <div class="task-main">
-        <h4>${task.title}</h4>
-        <div class="task-meta">
-          <span class="chip ${task.status}">${getStatusLabel(task.status)}</span>
-          <span class="chip ${task.priority}">${getPriorityLabel(task.priority)}</span>
-        </div>
-      </div>
-      <button class="small-btn" data-action="advance" data-id="${task.id}">Avançar</button>
-      <div class="task-actions">
-        <button class="small-btn danger" data-action="delete" data-id="${task.id}">Excluir</button>
-      </div>
-    `;
-    taskList.appendChild(card);
-  });
-
-  updateSummary();
-}
-
-function saveTask() {
-  clearValidation();
-
-  const title = taskTitle.value.trim();
-  const status = taskStatus.value;
-  const priority = taskPriority.value;
-
-  if (!title) {
-    titleError.classList.remove('hidden');
-    taskTitle.classList.add('invalid');
-    return;
+    tasks.unshift({
+      id: Date.now().toString(),
+      title,
+      desc: document.getElementById('task-desc').value.trim(),
+      priority: document.getElementById('task-priority').value,
+      status: document.getElementById('task-status').value,
+      createdAt: Date.now()
+    });
   }
 
-  const completed = status === 'done';
-  tasks.unshift({ id: nextId++, title, status, priority, completed });
-  saveTasks();
-  addActivity(`Nova tarefa criada: ${title}`);
-  taskTitle.value = '';
-  taskStatus.value = 'todo';
-  taskPriority.value = 'high';
-  closeModal();
-  renderTasks();
+  save(); closeModal(); render();
 }
 
-function toggleTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
+// ── EVENTS ──
+document.getElementById('btn-new').addEventListener('click', () => openModal());
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-cancel').addEventListener('click', closeModal);
+document.getElementById('modal-save').addEventListener('click', saveModal);
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 
-  task.completed = !task.completed;
-  task.status = task.completed ? 'done' : 'todo';
-  saveTasks();
-  addActivity(`${task.completed ? 'Concluída' : 'Reaberta'}: ${task.title}`);
-  renderTasks();
-}
+document.getElementById('task-title').addEventListener('keydown', e => { if (e.key === 'Enter') saveModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-function advanceTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
+document.getElementById('search-input').addEventListener('input', render);
+document.getElementById('priority-filter').addEventListener('change', render);
 
-  if (task.status === 'todo') task.status = 'doing';
-  else if (task.status === 'doing') {
-    task.status = 'done';
-    task.completed = true;
-  } else {
-    task.status = 'todo';
-    task.completed = false;
+document.getElementById('task-list').addEventListener('click', e => {
+  const checkId = e.target.closest('[data-id]')?.dataset.id;
+  const editId = e.target.closest('[data-edit]')?.dataset.edit;
+  const delId = e.target.closest('[data-del]')?.dataset.del;
+
+  if (checkId) {
+    const t = tasks.find(x => x.id === checkId);
+    t.status = t.status === 'concluida' ? 'pendente' : 'concluida';
+    save(); render();
   }
-
-  saveTasks();
-  addActivity(`Status alterado: ${task.title}`);
-  renderTasks();
-}
-
-function deleteTask(id) {
-  const task = tasks.find(t => t.id === id);
-  if (!task) return;
-
-  const confirmed = confirm(`Remover a tarefa "${task.title}"? Esta ação não pode ser desfeita.`);
-  if (!confirmed) return;
-
-  const index = tasks.findIndex(t => t.id === id);
-  tasks.splice(index, 1);
-  saveTasks();
-  addActivity(`Tarefa removida: ${task.title}`);
-  renderTasks();
-}
-
-function clearDoneTasks() {
-  const doneCount = tasks.filter(t => t.status === 'done').length;
-  if (!doneCount) return;
-
-  const confirmed = confirm(`Remover ${doneCount} tarefa(s) concluída(s)? Esta ação não pode ser desfeita.`);
-  if (!confirmed) return;
-
-  for (let i = tasks.length - 1; i >= 0; i--) {
-    if (tasks[i].status === 'done') tasks.splice(i, 1);
+  if (editId) openModal(editId);
+  if (delId) {
+    tasks = tasks.filter(x => x.id !== delId);
+    save(); render();
   }
-  saveTasks();
-  addActivity('Tarefas concluídas removidas');
-  renderTasks();
-}
-
-openModalBtn.addEventListener('click', openModal);
-quickAddBtn.addEventListener('click', openModal);
-closeModalBtn.addEventListener('click', closeModal);
-saveTaskBtn.addEventListener('click', saveTask);
-
-statusFilter.addEventListener('change', (e) => {
-  currentFilter = e.target.value;
-  renderTasks();
 });
 
-searchInput.addEventListener('input', (e) => {
-  currentSearch = e.target.value;
-  renderTasks();
-});
-
-themeToggle.addEventListener('click', () => {
-  document.body.classList.toggle('dark');
-  currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
-  themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
-  addActivity(`Tema alterado para ${currentTheme === 'dark' ? 'escuro' : 'claro'}`);
-});
-
-sortPriorityBtn.addEventListener('click', () => {
-  sortByPriority = !sortByPriority;
-  sortPriorityBtn.textContent = sortByPriority ? 'Ordem normal' : 'Ordenar prioridade';
-  renderTasks();
-});
-
-resetFiltersBtn.addEventListener('click', () => {
-  currentFilter = 'all';
-  currentSearch = '';
-  sortByPriority = false;
-  statusFilter.value = 'all';
-  searchInput.value = '';
-  sortPriorityBtn.textContent = 'Ordenar prioridade';
-  renderTasks();
-});
-
-clearDoneBtn.addEventListener('click', clearDoneTasks);
-
-taskModal.addEventListener('click', (e) => {
-  if (e.target === taskModal) closeModal();
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
-});
-
-taskList.addEventListener('click', (e) => {
-  const button = e.target.closest('[data-action]');
-  if (!button) return;
-  const action = button.dataset.action;
-  const id = Number(button.dataset.id);
-
-  if (action === 'advance') advanceTask(id);
-  if (action === 'delete') deleteTask(id);
-});
-
-taskList.addEventListener('change', (e) => {
-  const checkbox = e.target.closest('[data-action="toggle"]');
-  if (!checkbox) return;
-  toggleTask(Number(checkbox.dataset.id));
-});
-
-navItems.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const section = btn.dataset.section;
-    setActiveNav(section);
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    activeFilter = item.dataset.filter;
+    render();
   });
 });
 
-addActivity('Workspace carregado');
-addActivity('Filtros, confirmações, navegação e persistência prontos para uso');
-
-setActiveNav('dashboard');
-renderTasks();
-closeModal();
+// ── INIT ──
+render();

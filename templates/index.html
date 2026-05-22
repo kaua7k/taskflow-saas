@@ -4,181 +4,133 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TaskFlow</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  /style.css') }}">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar glass">
-      <div class="brand-block">
-        <div class="brand-logo">TF</div>
-        <div>
-          <h1>TaskFlow</h1>
-          <p>Focus workspace</p>
-        </div>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">TF</div>
+      <span class="logo-name">TaskFlow</span>
+    </div>
+    <nav class="nav-section">
+      <div class="nav-label">Visualização</div>
+      <div class="nav-item active" data-filter="all">
+        <span>⊞</span> Todas <span class="count" id="count-all">0</span>
       </div>
-
-      <nav class="nav-list">
-        <button class="nav-item active" data-section="dashboard">Dashboard</button>
-        <button class="nav-item" data-section="tasks">Tarefas</button>
-        <button class="nav-item" data-section="today">Hoje</button>
-        <button class="nav-item" data-section="completed">Concluídas</button>
-      </nav>
-
-      <div class="sidebar-card">
-        <span>Progresso semanal</span>
-        <strong id="weeklyProgress">0%</strong>
-        <div class="progress-track">
-          <div id="weeklyBar" class="progress-fill"></div>
-        </div>
+      <div class="nav-item" data-filter="hoje">
+        <span>◷</span> Hoje <span class="count" id="count-hoje">0</span>
       </div>
-    </aside>
-
-    <main class="main-area">
-      <header class="topbar glass">
-        <div>
-          <p class="eyebrow">Workspace</p>
-          <h2>Seu painel de tarefas</h2>
-        </div>
-
-        <div class="topbar-actions">
-          <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Buscar tarefa, prioridade ou status">
-          </div>
-          <select id="statusFilter" class="soft-input">
-            <option value="all">Todos status</option>
-            <option value="todo">A fazer</option>
-            <option value="doing">Em andamento</option>
-            <option value="done">Concluída</option>
-          </select>
-          <button id="themeToggle" class="icon-btn" type="button" aria-label="Alternar tema">🌙</button>
-          <button id="openModal" class="primary-btn" type="button">Nova tarefa</button>
-        </div>
-      </header>
-
-      <section class="hero glass">
-        <div>
-          <p class="eyebrow">Planejamento inteligente</p>
-          <h3>Organize entregas com uma interface limpa, rápida e elegante.</h3>
-          <p class="hero-copy">
-            Visual tipo produto premium, foco na tarefa certa e fluxo simples para usar no dia a dia.
-          </p>
-        </div>
-        <div class="hero-actions">
-          <button id="quickAddBtn" class="primary-btn" type="button">Adicionar agora</button>
-          <button id="clearDoneBtn" class="secondary-btn" type="button">Limpar concluídas</button>
-        </div>
-      </section>
-
-      <section class="stats-grid">
-        <article class="stat-card glass">
-          <span>Total</span>
-          <strong id="totalTasks">0</strong>
-          <small>Todas as tarefas cadastradas</small>
-        </article>
-        <article class="stat-card glass">
-          <span>Em andamento</span>
-          <strong id="doingTasks">0</strong>
-          <small>Tarefas em execução</small>
-        </article>
-        <article class="stat-card glass">
-          <span>Concluídas</span>
-          <strong id="doneTasks">0</strong>
-          <small>Itens finalizados</small>
-        </article>
-        <article class="stat-card glass">
-          <span>Alta prioridade</span>
-          <strong id="highPriorityTasks">0</strong>
-          <small>Demandas críticas</small>
-        </article>
-      </section>
-
-      <section class="board-grid">
-        <section class="tasks-panel glass">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Tasks</p>
-              <h3>Lista principal</h3>
-            </div>
-            <div class="panel-actions">
-              <button id="sortPriorityBtn" class="secondary-btn" type="button">Ordenar prioridade</button>
-              <button id="resetFiltersBtn" class="secondary-btn" type="button">Limpar filtros</button>
-            </div>
-          </div>
-
-          <div id="emptyState" class="empty-state hidden">
-            <div class="empty-icon">◌</div>
-            <h4>Nenhuma tarefa encontrada</h4>
-            <p>Ajuste os filtros ou crie uma nova tarefa para continuar.</p>
-          </div>
-
-          <div id="taskList" class="task-list"></div>
-        </section>
-
-        <aside class="side-panel glass">
-          <div class="mini-card">
-            <p class="eyebrow">Resumo</p>
-            <h3 id="focusLabel">Foco do dia</h3>
-            <p id="focusText">
-              Finalize o que está em andamento antes de abrir novas frentes.
-            </p>
-          </div>
-
-          <div class="mini-card">
-            <p class="eyebrow">Atividade</p>
-            <ul id="activityList" class="activity-list"></ul>
-          </div>
-        </aside>
-      </section>
-    </main>
-  </div>
-
-  <div id="taskModal" class="modal hidden">
-    <div class="modal-box glass-strong">
-      <div class="modal-head">
-        <div>
-          <p class="eyebrow">Nova tarefa</p>
-          <h3>Criar item</h3>
-        </div>
-        <button id="closeModal" class="icon-btn" type="button" aria-label="Fechar modal">✕</button>
+      <div class="nav-item" data-filter="andamento">
+        <span>◉</span> Em andamento <span class="count" id="count-andamento">0</span>
       </div>
-
-      <div class="form-grid">
-        <label>
-          <span>Título</span>
-          <input type="text" id="taskTitle" placeholder="Ex.: Revisar proposta comercial">
-        </label>
-        <p id="titleError" class="field-error hidden">Informe um título para a tarefa.</p>
-
-        <label>
-          <span>Status</span>
-          <select id="taskStatus">
-            <option value="todo">A fazer</option>
-            <option value="doing">Em andamento</option>
-            <option value="done">Concluída</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Prioridade</span>
-          <select id="taskPriority">
-            <option value="high">Alta</option>
-            <option value="medium">Média</option>
-            <option value="low">Baixa</option>
-          </select>
-        </label>
+      <div class="nav-item" data-filter="concluida">
+        <span>✓</span> Concluídas <span class="count" id="count-concluida">0</span>
       </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="progress-label">
+        <span>Progresso</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </aside>
 
-      <div class="modal-actions">
-        <button id="saveTask" class="primary-btn" type="button">Salvar tarefa</button>
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <span class="topbar-title">Tarefas</span>
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="search-input" placeholder="Buscar...">
+      </div>
+      <select class="filter-select" id="priority-filter">
+        <option value="all">Todas prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Média</option>
+        <option value="baixa">Baixa</option>
+      </select>
+      <button class="btn-new" id="btn-new">+ Nova tarefa</button>
+    </header>
+
+    <!-- STATS -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="stat-total">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Em andamento</div>
+        <div class="stat-value blue" id="stat-andamento">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Concluídas</div>
+        <div class="stat-value green" id="stat-concluidas">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Alta prioridade</div>
+        <div class="stat-value amber" id="stat-alta">0</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="task-list" id="task-list"></div>
+      <div class="empty hidden" id="empty-state">
+        <div class="empty-icon">◫</div>
+        <h3>Nenhuma tarefa</h3>
+        <p>Crie uma nova tarefa para começar.</p>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<!-- MODAL -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Nova tarefa</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="form-group">
+      abel class="form-label">Título</label>
+      <input type="text" class="form-input" id="task-title" placeholder="Descreva a tarefa...">
+    </div>
+    <div class="form-group">
+      abel class="form-label">Descrição</label>
+      <textarea class="form-textarea" id="task-desc" placeholder="Detalhes opcionais..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        abel class="form-label">Prioridade</label>
+        <select class="form-select" id="task-priority">
+          <option value="baixa">Baixa</option>
+          <option value="media" selected>Média</option>
+          <option value="alta">Alta</option>
+        </select>
+      </div>
+      <div class="form-group">
+        abel class="form-label">Status</label>
+        <select class="form-select" id="task-status">
+          <option value="pendente">Pendente</option>
+          <option value="andamento">Em andamento</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="modal-save">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
