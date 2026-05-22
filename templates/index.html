@@ -1,136 +1,104 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+python -c "
+html = '''<!DOCTYPE html>
+<html lang=\"pt-BR\">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset=\"UTF-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
   <title>TaskFlow</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  /style.css') }}\">
 </head>
 <body>
-<div class="app">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">TF</div>
-      <span class="logo-name">TaskFlow</span>
+<div class=\"app\">
+  <aside class=\"sidebar\">
+    <div class=\"sidebar-logo\">
+      <div class=\"logo-mark\">TF</div>
+      <span class=\"logo-name\">TaskFlow</span>
     </div>
-    <nav class="nav-section">
-      <div class="nav-label">Visualização</div>
-      <div class="nav-item active" data-filter="all">
-        <span>⊞</span> Todas <span class="count" id="count-all">0</span>
-      </div>
-      <div class="nav-item" data-filter="hoje">
-        <span>◷</span> Hoje <span class="count" id="count-hoje">0</span>
-      </div>
-      <div class="nav-item" data-filter="andamento">
-        <span>◉</span> Em andamento <span class="count" id="count-andamento">0</span>
-      </div>
-      <div class="nav-item" data-filter="concluida">
-        <span>✓</span> Concluídas <span class="count" id="count-concluida">0</span>
-      </div>
+    <nav class=\"nav-section\">
+      <div class=\"nav-label\">Visualizacao</div>
+      <div class=\"nav-item active\" data-filter=\"all\"><span>+</span> Todas <span class=\"count\" id=\"count-all\">0</span></div>
+      <div class=\"nav-item\" data-filter=\"hoje\"><span>o</span> Hoje <span class=\"count\" id=\"count-hoje\">0</span></div>
+      <div class=\"nav-item\" data-filter=\"andamento\"><span>*</span> Em andamento <span class=\"count\" id=\"count-andamento\">0</span></div>
+      <div class=\"nav-item\" data-filter=\"concluida\"><span>v</span> Concluidas <span class=\"count\" id=\"count-concluida\">0</span></div>
     </nav>
-    <div class="sidebar-bottom">
-      <div class="progress-label">
-        <span>Progresso</span>
-        <span id="progress-pct">0%</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
+    <div class=\"sidebar-bottom\">
+      <div class=\"progress-label\"><span>Progresso</span><span id=\"progress-pct\">0%</span></div>
+      <div class=\"progress-bar\"><div class=\"progress-fill\" id=\"progress-fill\" style=\"width:0%\"></div></div>
     </div>
   </aside>
-
-  <!-- MAIN -->
-  <div class="main">
-    <!-- TOPBAR -->
-    <header class="topbar">
-      <span class="topbar-title">Tarefas</span>
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input type="text" id="search-input" placeholder="Buscar...">
+  <div class=\"main\">
+    <header class=\"topbar\">
+      <span class=\"topbar-title\">Tarefas</span>
+      <div class=\"search-wrap\">
+        <span class=\"search-icon\">S</span>
+        <input type=\"text\" id=\"search-input\" placeholder=\"Buscar...\">
       </div>
-      <select class="filter-select" id="priority-filter">
-        <option value="all">Todas prioridades</option>
-        <option value="alta">Alta</option>
-        <option value="media">Média</option>
-        <option value="baixa">Baixa</option>
+      <select class=\"filter-select\" id=\"priority-filter\">
+        <option value=\"all\">Todas prioridades</option>
+        <option value=\"alta\">Alta</option>
+        <option value=\"media\">Media</option>
+        <option value=\"baixa\">Baixa</option>
       </select>
-      <button class="btn-new" id="btn-new">+ Nova tarefa</button>
+      <button class=\"btn-new\" id=\"btn-new\">+ Nova tarefa</button>
     </header>
-
-    <!-- STATS -->
-    <div class="stats-bar">
-      <div class="stat">
-        <div class="stat-label">Total</div>
-        <div class="stat-value" id="stat-total">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Em andamento</div>
-        <div class="stat-value blue" id="stat-andamento">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Concluídas</div>
-        <div class="stat-value green" id="stat-concluidas">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Alta prioridade</div>
-        <div class="stat-value amber" id="stat-alta">0</div>
-      </div>
+    <div class=\"stats-bar\">
+      <div class=\"stat\"><div class=\"stat-label\">Total</div><div class=\"stat-value\" id=\"stat-total\">0</div></div>
+      <div class=\"stat\"><div class=\"stat-label\">Em andamento</div><div class=\"stat-value blue\" id=\"stat-andamento\">0</div></div>
+      <div class=\"stat\"><div class=\"stat-label\">Concluidas</div><div class=\"stat-value green\" id=\"stat-concluidas\">0</div></div>
+      <div class=\"stat\"><div class=\"stat-label\">Alta prioridade</div><div class=\"stat-value amber\" id=\"stat-alta\">0</div></div>
     </div>
-
-    <!-- CONTENT -->
-    <div class="content">
-      <div class="task-list" id="task-list"></div>
-      <div class="empty hidden" id="empty-state">
-        <div class="empty-icon">◫</div>
+    <div class=\"content\">
+      <div class=\"task-list\" id=\"task-list\"></div>
+      <div class=\"empty hidden\" id=\"empty-state\">
+        <div class=\"empty-icon\">[]</div>
         <h3>Nenhuma tarefa</h3>
-        <p>Crie uma nova tarefa para começar.</p>
+        <p>Crie uma nova tarefa para comecar.</p>
       </div>
     </div>
   </div>
 </div>
-
-<!-- MODAL -->
-<div class="modal-overlay hidden" id="modal">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">Nova tarefa</span>
-      <button class="modal-close" id="modal-close">✕</button>
+<div class=\"modal-overlay hidden\" id=\"modal\">
+  <div class=\"modal\">
+    <div class=\"modal-header\">
+      <span class=\"modal-title\" id=\"modal-title\">Nova tarefa</span>
+      <button class=\"modal-close\" id=\"modal-close\">X</button>
     </div>
-    <div class="form-group">
-      abel class="form-label">Título</label>
-      <input type="text" class="form-input" id="task-title" placeholder="Descreva a tarefa...">
+    <div class=\"form-group\">
+      abel class=\"form-label\">Titulo</label>
+      <input type=\"text\" class=\"form-input\" id=\"task-title\" placeholder=\"Descreva a tarefa...\">
     </div>
-    <div class="form-group">
-      abel class="form-label">Descrição</label>
-      <textarea class="form-textarea" id="task-desc" placeholder="Detalhes opcionais..."></textarea>
+    <div class=\"form-group\">
+      abel class=\"form-label\">Descricao</label>
+      <textarea class=\"form-textarea\" id=\"task-desc\" placeholder=\"Detalhes opcionais...\"></textarea>
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        abel class="form-label">Prioridade</label>
-        <select class="form-select" id="task-priority">
-          <option value="baixa">Baixa</option>
-          <option value="media" selected>Média</option>
-          <option value="alta">Alta</option>
+    <div class=\"form-row\">
+      <div class=\"form-group\">
+        abel class=\"form-label\">Prioridade</label>
+        <select class=\"form-select\" id=\"task-priority\">
+          <option value=\"baixa\">Baixa</option>
+          <option value=\"media\" selected>Media</option>
+          <option value=\"alta\">Alta</option>
         </select>
       </div>
-      <div class="form-group">
-        abel class="form-label">Status</label>
-        <select class="form-select" id="task-status">
-          <option value="pendente">Pendente</option>
-          <option value="andamento">Em andamento</option>
-          <option value="concluida">Concluída</option>
+      <div class=\"form-group\">
+        abel class=\"form-label\">Status</label>
+        <select class=\"form-select\" id=\"task-status\">
+          <option value=\"pendente\">Pendente</option>
+          <option value=\"andamento\">Em andamento</option>
+          <option value=\"concluida\">Concluida</option>
         </select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" id="modal-cancel">Cancelar</button>
-      <button class="btn btn-primary" id="modal-save">Salvar</button>
+    <div class=\"modal-footer\">
+      <button class=\"btn btn-ghost\" id=\"modal-cancel\">Cancelar</button>
+      <button class=\"btn btn-primary\" id=\"modal-save\">Salvar</button>
     </div>
   </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src=\"{{ url_for('static', filename='js/app.js') }}\"></script>
 </body>
-</html>
+</html>'''
+with open('templates/index.html', 'w', encoding='utf-8') as f:
+    f.write(html)
+print('OK')
+"
