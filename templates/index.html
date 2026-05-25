@@ -15,11 +15,11 @@
     </div>
     
     <nav class="nav-section">
-      <div class="nav-label">VisualizaÃ§Ã£o</div>
-      <div class="nav-item active" data-filter="all"><span>ðŸ“‘</span> Todas <span class="count" id="count-all">0</span></div>
-      <div class="nav-item" data-filter="hoje"><span>ðŸ“…</span> Hoje <span class="count" id="count-hoje">0</span></div>
-      <div class="nav-item" data-filter="andamento"><span>âš¡</span> Em andamento <span class="count" id="count-andamento">0</span></div>
-      <div class="nav-item" data-filter="concluida"><span>âœ…</span> ConcluÃ­das <span class="count" id="count-concluida">0</span></div>
+      <div class="nav-label">Visualização</div>
+      <div class="nav-item active" data-filter="all"><span>📝</span> Todas <span class="count" id="count-all">0</span></div>
+      <div class="nav-item" data-filter="hoje"><span>📅</span> Hoje <span class="count" id="count-hoje">0</span></div>
+      <div class="nav-item" data-filter="andamento"><span>⚡</span> Em andamento <span class="count" id="count-andamento">0</span></div>
+      <div class="nav-item" data-filter="concluida"><span>✅</span> Concluídas <span class="count" id="count-concluida">0</span></div>
     </nav>
 
     <div class="nav-section">
@@ -43,13 +43,13 @@
     <header class="topbar">
       <span class="topbar-title">Meu Workspace</span>
       <div class="search-wrap">
-        <span class="search-icon">ðŸ”</span>
+        <span class="search-icon">🔍</span>
         <input type="text" id="search-input" placeholder="Buscar tarefas...">
       </div>
       <select class="filter-select" id="priority-filter">
         <option value="all">Todas prioridades</option>
         <option value="alta">Alta</option>
-        <option value="media">MÃ©dia</option>
+        <option value="media">Média</option>
         <option value="baixa">Baixa</option>
       </select>
       <button class="btn-new" id="btn-new">+ Nova Tarefa</button>
@@ -66,14 +66,14 @@
       <div class="content">
         <div class="task-list" id="task-list"></div>
         <div class="empty hidden" id="empty-state">
-          <div class="empty-icon">ðŸ“‚</div>
+          <div class="empty-icon">📂</div>
           <h3>Tudo limpo por aqui!</h3>
           <p>Organize seu dia criando uma nova tarefa.</p>
         </div>
       </div>
       
       <aside class="notes-panel">
-        <div class="notes-header">Notas RÃ¡pidas</div>
+        <div class="notes-header">Notas Rápidas</div>
         <textarea id="quick-notes" placeholder="Rascunhos, ideias ou lembretes rÃ¡pidos..."></textarea>
       </aside>
     </div>
@@ -87,11 +87,11 @@
       <button class="modal-close" id="modal-close">Ã—</button>
     </div>
     <div class="form-group">
-      <label class="form-label">TÃ­tulo</label>
+      <label class="form-label">Título</label>
       <input type="text" class="form-input" id="task-title" placeholder="O que precisa ser feito?">
     </div>
     <div class="form-group">
-      <label class="form-label">DescriÃ§Ã£o</label>
+      <label class="form-label">Descrição</label>
       <textarea class="form-textarea" id="task-desc" placeholder="Adicione mais detalhes..."></textarea>
     </div>
     <div class="form-row">
@@ -99,7 +99,7 @@
         <label class="form-label">Prioridade</label>
         <select class="form-select" id="task-priority">
           <option value="baixa">Baixa</option>
-          <option value="media" selected>MÃ©dia</option>
+          <option value="media" selected>Média</option>
           <option value="alta">Alta</option>
         </select>
       </div>
@@ -113,7 +113,7 @@
       <select class="form-select" id="task-status">
         <option value="pendente">Pendente</option>
         <option value="andamento">Em andamento</option>
-        <option value="concluida">ConcluÃ­da</option>
+        <option value="concluida">Concluída</option>
       </select>
     </div>
     <div class="modal-footer">
