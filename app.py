@@ -1,7 +1,13 @@
-from flask import Flask, render_template
+﻿from flask import Flask, render_template
 import os
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+# Define o caminho base do projeto
+base_dir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__, 
+            static_folder=os.path.join(base_dir, 'static'),
+            template_folder=os.path.join(base_dir, 'templates'),
+            static_url_path='/static')
 
 @app.route("/")
 def home():
